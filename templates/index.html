@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"
+    />
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <style>
+      .inputDnD .form-control-file {
+        position: relative;
+        width: 100%;
+        height: 100%;
+        min-height: 6em;
+        outline: none;
+        visibility: hidden;
+        cursor: pointer;
+        background-color: #c61c23;
+        box-shadow: 0 0 5px solid currentColor;
+      }
+      .inputDnD .form-control-file:before {
+        content: attr(data-title);
+        position: absolute;
+        top: 0.5em;
+        left: 0;
+        width: 100%;
+        min-height: 6em;
+        line-height: 2em;
+        padding-top: 1.5em;
+        opacity: 1;
+        visibility: visible;
+        text-align: center;
+        border: 0.25em dashed currentColor;
+        -webkit-transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden;
+        background-color: #181818;
+      }
+      .inputDnD .form-control-file:hover:before {
+        border-style: solid;
+        box-shadow: inset 0px 0px 0px 0.25em currentColor;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        background: black;
+      }
+      canvas {
+        display: block;
+        position: absolute;
+      }
+      .container {
+        padding-top: 2em;
+      }
+      .navbar-brand {
+        margin: auto;
+      }
+    </style>
+  </head>
+  <body>
+    <canvas id="c"> </canvas>
+    <nav
+      class="navbar navbar-dark bg-dark"
+      style="background-color: #181818 !important"
+    >
+      <a class="navbar-brand" href="#">
+        <img src="spyware.svg" width="50" height="50" alt="" />
+      </a>
+    </nav>
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-6">
+          <button
+            type="button"
+            class="btn btn-primary btn-block"
+            onclick="document.getElementById('inputFile').click()"
+          >
+            Preview (Encode)
+          </button>
+          <img
+            src="https://www.cimec.co.za/wp-content/uploads/2018/07/4-Unique-Placeholder-Image-Services-for-Designers.png"
+            class="img-fluid"
+            id="encode_outputFile"
+            alt="Responsive image"
+          />
+          <div class="form-group inputDnD">
+            <label class="sr-only" for="inputFile">File Upload</label>
+            <input
+              type="file"
+              class="form-control-file text-primary font-weight-bold"
+              id="encode_inputFile"
+              accept="image/*"
+              onchange="readUrl(this)"
+              data-title="Drag and drop an image here"
+            />
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <button
+            type="button"
+            class="btn btn-danger btn-block"
+            onclick="document.getElementById('inputFile').click()"
+          >
+            Preview (Decode)
+          </button>
+          <img
+            src="https://www.cimec.co.za/wp-content/uploads/2018/07/4-Unique-Placeholder-Image-Services-for-Designers.png"
+            class="img-fluid"
+            id="decode_outputFile"
+            alt="Responsive image"
+          />
+          <div class="form-group inputDnD">
+            <label class="sr-only" for="inputFile">File Upload</label>
+            <input
+              type="file"
+              class="form-control-file text-danger font-weight-bold"
+              id="decode_inputFile"
+              accept="image/*"
+              onchange="readUrl(this)"
+              data-title="Drag and drop an image here"
+            />
+          </div>
+        </div>
+      </div>
+      <div class="row" style="padding-top: 1rem">
+        <div class="col-sm-6 offset-md-3">
+          <button
+            type="button"
+            id="begin"
+            class="btn btn-warning btn-block invisible"
+          >
+            BEGIN
+          </button>
+        </div>
+      </div>
+    </div>
+    <div
+      class="encryptModal modal fade"
+      id="exampleModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLongTitle">
+              Enter secret message
+            </h5>
+            <button
+              type="button"
+              class="close"
+              data-dismiss="modal"
+              aria-label="Close"
+            >
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <form>
+              <div class="form-group">
+                <label for="message-text" class="col-form-label"
+                  >Message:</label
+                >
+                <textarea class="form-control" id="message-text"></textarea>
+              </div>
+            </form>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-dismiss="modal">
+              Encrypt
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      class="decryptModal modal fade"
+      id="exampleModalCenter"
+      tabindex="-1"
+      role="dialog"
+      aria-labelledby="exampleModalCenterTitle"
+      aria-hidden="true"
+    ></div>
+  </body>
+
+  <script>
+    function readUrl(input) {
+      if (input.files && input.files[0]) {
+        let reader = new FileReader();
+        reader.onload = (e) => {
+          let imgData = e.target.result;
+          if (input.id == "encode_inputFile") {
+            $("#encode_outputFile").attr("src", imgData);
+            $("#decode_inputFile")
+              .prop("disabled", true)
+              .attr("data-title", "DISABLED")
+              .removeClass("text-danger")
+              .addClass("text-secondary");
+            $("#begin")
+              .removeClass("invisible")
+              .addClass(" animate__animated animate__fadeInDown animate__slow")
+              .text("Beginning to Encode");
+            $(".encryptModal")
+              .modal("show")
+              .on("hide.bs.modal", function (e) {
+                message = $("#message-text").val();
+                requestFunnel(
+                  input.files[0],
+                  input.files[0].name,
+                  input.id,
+                  message
+                );
+              });
+          } else if (input.id == "decode_inputFile") {
+            $("#decode_outputFile").attr("src", imgData).prop("disabled", true);
+            $("#encode_inputFile")
+              .prop("disabled", true)
+              .attr("data-title", "DISABLED")
+              .removeClass("text-primary")
+              .addClass("text-secondary");
+            $("#begin")
+              .removeClass("invisible")
+              .addClass(" animate__animated animate__fadeInDown animate__slow")
+              .text("Beginning to Decode");
+            requestFunnel(input.files[0], input.files[0].name, input.id, "hi");
+          }
+          let imgName = input.files[0].name;
+          input.setAttribute("data-title", imgName);
+
+          // console.log(e.target.result);
+        };
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+    var res;
+    function requestFunnel(file, name, process, message) {
+      process == "encode_inputFile"
+        ? encode(file, name, message)
+        : decode(file, name);
+    }
+
+    function encode(file, name, message) {
+      var form = new FormData();
+      form.append("file", file, name);
+      form.append("message", message);
+
+      var settings = {
+        url: "http://127.0.0.1:5000/encode",
+        method: "POST",
+        timeout: 0,
+        processData: false,
+        mimeType: "multipart/form-data",
+        contentType: false,
+        data: form,
+        success: function (data) {
+          console.log("hi");
+        },
+      };
+
+      $.ajax(settings)
+        .always(function (response) {
+          cleanData = JSON.parse(response).status.substring(2).slice(0, -1);
+          var image = new Image();
+          image.src = "data:image/png;base64," + cleanData;
+          $("#decode_outputFile").attr(
+            "src",
+            "data:image/png;base64," + cleanData
+          );
+          $("#decode_outputFile").wrap(
+            "<a href=" +
+              "data:image/png;base64," +
+              cleanData +
+              " download='encoded.png'></a>"
+          );
+        })
+        .fail(function () {
+          console.log("failed");
+        });
+    }
+    function decode(file, name) {
+      var form = new FormData();
+      form.append("file", file, name);
+
+      var settings = {
+        url: "http://127.0.0.1:5000/decode",
+        method: "POST",
+        timeout: 0,
+        processData: false,
+        mimeType: "multipart/form-data",
+        contentType: false,
+        data: form,
+      };
+
+      $.ajax(settings).done(function (response) {
+        var message = JSON.parse(response).MESSAGE.replace(/\0/g, "");
+        $(".decryptModal")
+          .append(
+            `<div class="modal-dialog modal-dialog-centered" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLongTitle">SHHHH.. You've got a secret message ~</h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  ` +
+              message +
+              `
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>`
+          )
+          .modal("show");
+      });
+    }
+    function base64Encode(str) {
+      var CHARS =
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+      var out = "",
+        i = 0,
+        len = str.length,
+        c1,
+        c2,
+        c3;
+      while (i < len) {
+        c1 = str.charCodeAt(i++) & 0xff;
+        if (i == len) {
+          out += CHARS.charAt(c1 >> 2);
+          out += CHARS.charAt((c1 & 0x3) << 4);
+          out += "==";
+          break;
+        }
+        c2 = str.charCodeAt(i++);
+        if (i == len) {
+          out += CHARS.charAt(c1 >> 2);
+          out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xf0) >> 4));
+          out += CHARS.charAt((c2 & 0xf) << 2);
+          out += "=";
+          break;
+        }
+        c3 = str.charCodeAt(i++);
+        out += CHARS.charAt(c1 >> 2);
+        out += CHARS.charAt(((c1 & 0x3) << 4) | ((c2 & 0xf0) >> 4));
+        out += CHARS.charAt(((c2 & 0xf) << 2) | ((c3 & 0xc0) >> 6));
+        out += CHARS.charAt(c3 & 0x3f);
+      }
+      return out;
+    }
+  </script>
+  <script>
+    // geting canvas by Boujjou Achraf
+    var c = document.getElementById("c");
+    var ctx = c.getContext("2d");
+
+    //making the canvas full screen
+    c.height = window.innerHeight;
+    c.width = window.innerWidth;
+
+    //chinese characters - taken from the unicode charset
+    var matrix =
+      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456789@#$%^&*()*&^%+-/~{[|`]}";
+    //converting the string into an array of single characters
+    matrix = matrix.split("");
+
+    var font_size = 10;
+    var columns = c.width / font_size; //number of columns for the rain
+    //an array of drops - one per column
+    var drops = [];
+    //x below is the x coordinate
+    //1 = y co-ordinate of the drop(same for every drop initially)
+    for (var x = 0; x < columns; x++) drops[x] = 1;
+
+    //drawing the characters
+    function draw() {
+      //Black BG for the canvas
+      //translucent BG to show trail
+      ctx.fillStyle = "rgba(0, 0, 0, 0.04)";
+      ctx.fillRect(0, 0, c.width, c.height);
+
+      ctx.fillStyle = "#3fdf3f"; //green text
+      ctx.font = font_size + "px arial";
+      //looping over drops
+      for (var i = 0; i < drops.length; i++) {
+        //a random chinese character to print
+        var text = matrix[Math.floor(Math.random() * matrix.length)];
+        //x = i*font_size, y = value of drops[i]*font_size
+        ctx.fillText(text, i * font_size, drops[i] * font_size);
+
+        //sending the drop back to the top randomly after it has crossed the screen
+        //adding a randomness to the reset to make the drops scattered on the Y axis
+        if (drops[i] * font_size > c.height && Math.random() > 0.975)
+          drops[i] = 0;
+
+        //incrementing Y coordinate
+        drops[i] += 0.7;
+      }
+    }
+
+    setInterval(draw, 35);
+  </script>
+</html>
