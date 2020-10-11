@@ -46,7 +46,7 @@ def encode():
     messageFile.close()
 
     # begin encode
-    bpcs.encode(vslfile, msgfile, encfile, alpha)
+    bpcs.encoderClass(vslfile, msgfile, encfile, alpha).encode()
     with open(encfile, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read())
         return jsonify({"status": str(encoded_string)})
@@ -71,7 +71,7 @@ def decode():
     encfile = "tempfiles/encoded.png"
 
     # begin decode
-    bpcs.decode(encfile, msgfile, alpha)
+    bpcs.decoderClass(encfile, msgfile, alpha).decode()
 
     # read secret message and return
     with open(msgfile, "r") as file:
