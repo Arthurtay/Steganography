@@ -260,7 +260,7 @@
       form.append("message", message);
 
       var settings = {
-        url: "http://127.0.0.1:5000/encode",
+        url: "/encode",
         method: "POST",
         timeout: 0,
         processData: false,
@@ -297,7 +297,7 @@
       form.append("file", file, name);
 
       var settings = {
-        url: "http://127.0.0.1:5000/decode",
+        url: "/decode",
         method: "POST",
         timeout: 0,
         processData: false,
